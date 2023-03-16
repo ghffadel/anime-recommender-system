@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <title>Anime Recommender System</title>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+  </head>
+
+  <body>
+    <h1>Anime Recommender System</h1>
+
+    <form id="form" method="POST" action="/recommendations">
+      <label for="recommendations">Recommendations:</label><br>
+      <textarea id="recommendations" name="recommendations" rows="5" cols="50"></textarea><br>
+
+      <label for="username">Your username:</label><br>
+      <input type="text" id="username" name="username"><br>
+
+      <button type="submit">Submit</button>
+    </form>
+    
+    <script>
+      $(document).ready(function() {
+        $("#form").submit(function(event) {
+          event.preventDefault();
+          
+          $.ajax({
+            url: "/recommendations",
+            type: "POST",
+            data: $('#form').serialize(),
+            success: function(response) {
+              let recommendations = response["recommendations"].join("\n");
+              $('#recommendations').val(recommendations);
+            },
+            error: function() {
+              alert("Error submitting form");
+            }
+          });
+        });
+      });
+    </script>
+  </body>
+</html>
