@@ -3,6 +3,7 @@
 <html lang="en">
   <head>
     <title>Anime Recommender System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
   </head>
 
@@ -11,10 +12,10 @@
 
     <form id="form" method="POST" action="/recommendations">
       <label for="recommendations">Recommendations:</label><br>
-      <textarea id="recommendations" name="recommendations" rows="5" cols="50"></textarea><br>
+      <textarea id="recommendations" name="recommendations" rows="5" cols="50" placeholder="Your recommendations will appear here." readonly></textarea><br>
 
       <label for="username">Your username:</label><br>
-      <input type="text" id="username" name="username"><br>
+      <input type="text" id="username" name="username" placeholder="Ex: coderzito"><br>
 
       <button type="submit">Submit</button>
     </form>
@@ -33,7 +34,14 @@
             data: $('#form').serialize(),
             success: function(response) {
               let recommendations = response["recommendations"].join("\n");
-              $('#recommendations').val(recommendations);
+            
+              if (recommendations.length > 0) {
+                $('#recommendations').val(recommendations);
+              }
+              
+              else {
+                $('#recommendations').val("Couldn't load recommendations :(");
+              }
             },
             error: function() {
               $('#recommendations').val("Couldn't load recommendations :(");

@@ -1,4 +1,4 @@
-from preprocessing import load_watched_animes
+from .preprocessing import load_watched_animes
 from sklearn.metrics.pairwise import cosine_similarity
 
 def get_similar_animes (anime_id, animes, vectors, quantity = 10):

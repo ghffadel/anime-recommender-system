@@ -1,7 +1,7 @@
 from flask import Flask, jsonify, request, render_template
-import preprocessing, recommendation
+from src import preprocessing, recommendation
 
-app = Flask(__name__)
+app = Flask(__name__, static_url_path = "/static")
 
 @app.route("/")
 def index ():
