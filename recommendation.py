@@ -1,62 +1,54 @@
-from ast import literal_eval
 from preprocessing import load_watched_animes
+from sklearn.metrics.pairwise import cosine_similarity
 
-def compute_distances (user, user_watched, user_dropped, profiles):
-    distances = list()
-
-    for _, row in profiles.iterrows():
-        neighbor = row["profile"]
-        similarity = 0
-
-        if neighbor != user:
-            neighbor_favorites = [*map(int, literal_eval(row["favorites_anime"]))]
-                
-            for anime in neighbor_favorites:
-                if anime in user_watched or anime in user_dropped:
-                    similarity += 1
-        
-        distances.append((similarity, neighbor))
+def get_similar_animes (anime_id, animes, vectors, quantity = 10):
+    try:
+        anime_vector = vectors[animes[animes["anime_id"] == anime_id].index[0]]
+        similarity_scores = cosine_similarity(anime_vector, vectors)
+        similar_animes = [(animes.iloc[i]["anime_id"], similarity_scores[0][i]) for i in range(len(animes))]
+        similar_animes.sort(key = lambda x: x[1], reverse = True)
+        return similar_animes[:quantity]
     
-    distances.sort(reverse = True)
-    return distances
+    except:
+        return list()
 
-def k_nearest_neighbors (user, user_watched, user_dropped, k, profiles):
-    neighbors = compute_distances(user, user_watched, user_dropped, profiles)[:k]
-    return neighbors
-
-def get_unwatched_animes (user_watched, user_dropped, neighbors):
+def get_unwatched_animes (user_watched, user_dropped, similar_animes):
     user_havent_watched = set()
 
-    for _, neighbor in neighbors:
-        try:
-            neighbor_watched, _ = load_watched_animes(neighbor)
-
-            for anime in neighbor_watched:
-                if anime not in user_watched and anime not in user_dropped:
-                    user_havent_watched.add(anime)
-
-        except Exception:
-            pass
+    for anime_id in similar_animes:
+        if anime_id not in [anime[0] for anime in user_watched] and anime_id not in [anime[0] for anime in user_dropped]:
+            user_havent_watched.add(anime_id)
 
     return user_havent_watched
 
-def get_recommendations (user, k, animes_data, profiles):
+def get_user_favourites (watched_animes, quantity = 10):
+    favourites = sorted(watched_animes.copy(), key = lambda anime: anime[1], reverse = True)[:quantity]
+    return favourites
+
+def get_recommendations (user, animes, vectors):
     response = load_watched_animes(user)
     
     if not response:
         return list()
-
+    
     user_watched, user_dropped = response
-    neighbors = k_nearest_neighbors(user, user_watched, user_dropped, k, profiles)
-    user_havent_watched = get_unwatched_animes(user_watched, user_dropped, neighbors)
+    user_favourites = get_user_favourites(user_watched)
+
+    similar_animes = set()
+
+    for favourite_anime in user_favourites:
+        similar_to_favourite = get_similar_animes(favourite_anime[0], animes, vectors)
+        [similar_animes.add(anime[0]) for anime in similar_to_favourite]
+
+    user_havent_watched = get_unwatched_animes(user_watched, user_dropped, similar_animes)
     
     recommendations = list()
 
-    for anime in user_havent_watched:
+    for anime_id in user_havent_watched:
         try:
-            title, score = animes_data[anime]
+            title, score = animes.loc[animes["anime_id"] == anime_id, ["title", "score"]].values.tolist()[0]
 
-            if score >= 8:
+            if score >= 7.5:
                 recommendations.append((title, score))
         
         except Exception:

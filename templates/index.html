@@ -23,6 +23,9 @@
       $(document).ready(function() {
         $("#form").submit(function(event) {
           event.preventDefault();
+
+          let recommendations = document.getElementById("recommendations");
+          recommendations.value = "Loading your recommendations...";
           
           $.ajax({
             url: "/recommendations",
@@ -33,7 +36,7 @@
               $('#recommendations').val(recommendations);
             },
             error: function() {
-              alert("Error submitting form");
+              $('#recommendations').val("Couldn't load recommendations :(");
             }
           });
         });
