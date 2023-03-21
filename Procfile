@@ -1,1 +1,1 @@
-web: gunicorn anime-recommender:app
+web: gunicorn app:app
