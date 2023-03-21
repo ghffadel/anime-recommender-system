@@ -18,8 +18,7 @@ def get_recommendations ():
     return jsonify({ "recommendations": recommendations })
 
 
-if __name__ == "__main__":
-    animes = preprocessing.load_animes()
-    vectors = preprocessing.get_vectors(animes)
+animes = preprocessing.load_animes()
+vectors = preprocessing.get_vectors(animes)
 
-    app.run(debug = True)
+app.run(debug = True)
