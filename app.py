@@ -9,7 +9,8 @@ def index ():
 
 @app.route("/recommendations", methods = ["POST"])
 def get_recommendations ():
-    global animes, vectors
+    animes = preprocessing.load_animes()
+    vectors = preprocessing.get_vectors(animes)
 
     username = request.form["username"]
 
@@ -18,7 +19,5 @@ def get_recommendations ():
     return jsonify({ "recommendations": recommendations })
 
 
-animes = preprocessing.load_animes()
-vectors = preprocessing.get_vectors(animes)
-
-app.run(debug = True)
+if __name__ == "__main__":
+    app.run(debug = True)
